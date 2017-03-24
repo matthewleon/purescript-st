@@ -12,6 +12,7 @@ import Control.Monad.Eff (Eff, runPure)
 foreign import data ST :: * -> !
 
 type STEff a = forall h. Eff (st :: ST h) a
+type STEff' h r a = Eff (st :: ST h | r) a
 
 -- | The type `STRef h a` represents a mutable reference holding a value of
 -- | type `a`, which can be used with the `ST h` effect.
@@ -21,27 +22,27 @@ foreign import data STRef :: * -> * -> *
 foreign import newSTRef
   :: forall a h r
    . a
-  -> Eff (st :: ST h | r) (STRef h a)
+  -> STEff' h r (STRef h a)
 
 -- | Read the current value of a mutable reference.
 foreign import readSTRef
   :: forall a h r
    . STRef h a
-  -> Eff (st :: ST h | r) a
+  -> STEff' h r a
 
 -- | Modify the value of a mutable reference by applying a function to the
 -- | current value.
 foreign import modifySTRef
   :: forall a h r
    . STRef h a -> (a -> a)
-  -> Eff (st :: ST h | r) a
+  -> STEff' h r a
 
 -- | Set the value of a mutable reference.
 foreign import writeSTRef
   :: forall a h r
    . STRef h a
   -> a
-  -> Eff (st :: ST h | r) a
+  -> STEff' h r a
 
 -- | Run an `ST` computation.
 -- |
@@ -53,7 +54,7 @@ foreign import writeSTRef
 -- | recommended approach is to use parentheses instead.
 foreign import runST
   :: forall a r
-   . (forall h. Eff (st :: ST h | r) a)
+   . (forall h. STEff' h r a)
   -> Eff r a
 
 -- | A convenience function which combines `runST` with `runPure`, which can be
